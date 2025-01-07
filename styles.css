@@ -1,0 +1,237 @@
+/* Material Design 变量 */
+:root {
+  --md-primary: #1a73e8;
+  --md-primary-dark: #1557b0;
+  --md-surface: #ffffff;
+  --md-background: #f8f9fa;
+  --md-shadow: 0 2px 6px 2px rgba(60,64,67,0.15);
+  --md-radius: 8px;
+  --md-spacing: 16px;
+  --md-font: 'Google Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* 翻译面板样式 */
+.translate-panel {
+  position: absolute;
+  z-index: 99999;
+  background: var(--md-surface);
+  box-shadow: var(--md-shadow);
+  border-radius: var(--md-radius);
+  min-width: 360px;
+  max-width: 480px;
+  display: none;
+  font-family: var(--md-font);
+  overflow: hidden;
+}
+
+.translate-header {
+  padding: var(--md-spacing);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--md-surface);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+.translate-lang-select {
+  padding: 8px 12px;
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 4px;
+  font-family: var(--md-font);
+  color: #202124;
+  background: var(--md-background);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.translate-content {
+  padding: var(--md-spacing);
+  background: var(--md-surface);
+}
+
+.translate-close {
+    cursor: pointer;
+    padding: 4px 8px;
+    font-size: 18px;
+    color: #666;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.translate-close:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: #333;
+}
+
+.translate-source,
+.translate-result {
+    margin-bottom: 16px;
+    padding: 12px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.02);
+}
+
+.translate-title {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.translate-text {
+    font-size: 15px;
+    line-height: 1.6;
+    word-break: break-word;
+    color: #333;
+}
+
+.translate-footer {
+    padding: 12px 16px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    background: rgba(250, 250, 250, 0.8);
+    border-radius: 0 0 12px 12px;
+}
+
+.translate-footer button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    background: #4285f4;
+    color: white;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(66, 133, 244, 0.2);
+}
+
+.translate-footer button:hover {
+    background: #3367d6;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(66, 133, 244, 0.3);
+}
+
+.translate-footer button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(66, 133, 244, 0.2);
+}
+
+/* Toast 消息样式 */
+.translate-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #323232;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-family: var(--md-font);
+  font-size: 14px;
+  z-index: 100000;
+  box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 10px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+/* 页面翻译样式 */
+.translated-text {
+    margin: 8px 0;
+    padding: 8px;
+    border-radius: 6px;
+    background: rgba(66, 133, 244, 0.03);
+    border-left: 3px solid #4285f4;
+}
+
+.original-text {
+    display: block;
+    margin-bottom: 6px;
+    color: #333;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.translated-text .translated-text {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+    padding-left: 8px;
+    border-left: 2px solid rgba(66, 133, 244, 0.3);
+}
+
+/* 页面翻译样式优化 */
+.page-translation-wrapper {
+  margin: 4px 0;
+  line-height: 1.5;
+}
+
+.page-translation-original {
+  color: #202124;
+  margin-bottom: 6px;
+  font-size: 15px;
+}
+
+.page-translation-result {
+  color: #1a73e8;  /* Material Design 主色 */
+  font-size: 14px;
+  padding: 6px 12px;
+  background: rgba(232, 240, 254, 0.6);  /* Material Design 浅蓝色背景 */
+  border-radius: 4px;
+  margin-top: 4px;
+}
+
+/* 移除之前的竖线相关样式 */
+.page-translation-result::before {
+  display: none;
+}
+
+/* 按钮样式 */
+.md-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-family: var(--md-font);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.25px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--md-primary);
+  color: white;
+}
+
+.md-button:hover {
+  background: var(--md-primary-dark);
+  box-shadow: 0 1px 3px rgba(60,64,67,0.3);
+}
+
+.md-button:active {
+  transform: translateY(1px);
+}
+
+/* 按钮样式美化 */
+#pageTranslateBtn {
+    margin-top: 12px;
+    background: linear-gradient(135deg, #34a853, #28875e);
+    border-radius: 8px;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(52, 168, 83, 0.2);
+}
+
+#pageTranslateBtn:hover {
+    background: linear-gradient(135deg, #2e9549, #237a52);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(52, 168, 83, 0.3);
+}
