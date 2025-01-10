@@ -38,6 +38,8 @@ class TranslatePanel {
          */
         this.isPageTranslating = false;
 
+        this.originalContent = null;  // 添加原始内容存储
+
         // 初始化
         this.init();
     }
@@ -277,6 +279,13 @@ class TranslatePanel {
             return;
         }
 
+        // 保存原始内容
+        this.originalContent = {
+            title: document.title,
+            body: document.body.innerHTML
+        };
+
+        this.addRestoreButton();
         this.isPageTranslating = true;
         document.body.setAttribute('data-translated', 'true');
 
@@ -370,6 +379,30 @@ class TranslatePanel {
                 this.translatedNodes.add(wrapper);
             }
         });
+    }
+
+    // 添加还原按钮
+    addRestoreButton() {
+        const existingBtn = document.querySelector('.translate-restore-btn');
+        if (existingBtn) return;
+
+        const restoreBtn = document.createElement('button');
+        restoreBtn.textContent = '还原';
+        restoreBtn.className = 'translate-restore-btn';
+        restoreBtn.addEventListener('click', () => this.restoreOriginalContent());
+        document.body.appendChild(restoreBtn);
+    }
+
+    // 还原内容
+    restoreOriginalContent() {
+        if (this.originalContent) {
+            document.title = this.originalContent.title;
+            document.body.innerHTML = this.originalContent.body;
+            this.isPageTranslating = false;
+            document.body.removeAttribute('data-translated');
+            this.addRestoreButton(); // 重新添加还原按钮
+            this.showToast('页面已还原');
+        }
     }
 }
 
