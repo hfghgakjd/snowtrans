@@ -360,15 +360,15 @@ class TranslatePanel {
 
         nodes.forEach((node, index) => {
             if (translations[index] && !node.parentElement.hasAttribute('data-translated')) {
-                const wrapper = document.createElement('div');
+                const wrapper = document.createElement('span'); // Changed from 'div'
                 wrapper.setAttribute('data-translated', 'true');
                 wrapper.className = 'page-translation-wrapper';
                 
-                const original = document.createElement('div');
+                const original = document.createElement('span'); // Changed from 'div'
                 original.textContent = node.textContent;
                 original.className = 'page-translation-original';
                 
-                const translated = document.createElement('div');
+                const translated = document.createElement('span'); // Changed from 'div'
                 translated.textContent = translations[index];
                 translated.className = 'page-translation-result';
                 

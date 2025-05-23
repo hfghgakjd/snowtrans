@@ -175,12 +175,14 @@
 .page-translation-wrapper {
   margin: 4px 0;
   line-height: 1.5;
+  display: inline; /* Added to preserve inline layout */
 }
 
 .page-translation-original {
   color: #202124;
   margin-bottom: 6px;
   font-size: 15px;
+  display: inline; /* Added to preserve inline layout */
 }
 
 .page-translation-result {
@@ -190,6 +192,7 @@
   background: rgba(232, 240, 254, 0.6);  /* Material Design 浅蓝色背景 */
   border-radius: 4px;
   margin-top: 4px;
+  display: inline; /* Added to preserve inline layout */
 }
 
 /* 移除之前的竖线相关样式 */
