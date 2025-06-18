@@ -72,6 +72,12 @@ class TranslatePanel {
             if (request.type === 'PAGE_TRANSLATE') {
                 this.translatePage();
             }
+            if (request.type === 'PING') {
+                sendResponse({ status: 'ready' });
+            }
+            if (request.type === 'CONTEXT_TRANSLATE') {
+                this.handleContextTranslate(request.text);
+            }
         });
 
         // 创建面板
@@ -610,7 +616,27 @@ class TranslatePanel {
         
         this.showToast('页面已还原');
     }
+
+    /**
+     * 处理右键菜单翻译
+     * @param {string} text - 要翻译的文本
+     */
+    handleContextTranslate(text) {
+        if (text) {
+            // 使用屏幕中心位置显示翻译面板
+            const position = {
+                x: window.innerWidth / 2,
+                y: window.innerHeight / 2
+            };
+            this.handleTranslate(text, position);
+        }
+    }
 }
 
-// 创建翻译面板实例
-const translatePanel = new TranslatePanel();
+// 防止重复初始化
+if (typeof window.translatePanelInstance !== 'undefined') {
+    console.log('Translation panel already initialized');
+} else {
+    // 创建翻译面板实例并存储到全局变量
+    window.translatePanelInstance = new TranslatePanel();
+}

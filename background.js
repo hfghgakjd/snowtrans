@@ -81,13 +81,44 @@ chrome.runtime.onInstalled.addListener(() => {
  * @param {Object} tab - 当前标签页信息
  * @author Shawn Jones
  */
-chrome.contextMenus.onClicked.addListener((info, tab) => {
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     if (info.menuItemId === 'translateSelection') {
         console.log('处理文本翻译..........');
-        chrome.tabs.sendMessage(tab.id, {
-            type: 'CONTEXT_TRANSLATE',
-            text: info.selectionText
-        });
+        
+        try {
+            // 检查content script是否已注入
+            let scriptInjected = false;
+            try {
+                await chrome.tabs.sendMessage(tab.id, { type: 'PING' });
+                scriptInjected = true;
+            } catch (error) {
+                scriptInjected = false;
+            }
+
+            // 如果未注入，先注入脚本
+            if (!scriptInjected) {
+                await chrome.scripting.insertCSS({
+                    target: { tabId: tab.id },
+                    files: ['styles.css']
+                });
+
+                await chrome.scripting.executeScript({
+                    target: { tabId: tab.id },
+                    files: ['content.js']
+                });
+                
+                // 等待脚本初始化
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+
+            // 发送翻译消息
+            chrome.tabs.sendMessage(tab.id, {
+                type: 'CONTEXT_TRANSLATE',
+                text: info.selectionText
+            });
+        } catch (error) {
+            console.error('Context menu translation error:', error);
+        }
     }
 });
 

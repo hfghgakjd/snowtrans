@@ -110,17 +110,33 @@ document.addEventListener('DOMContentLoaded', function () {
             // 获取当前标签页
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
             
-            // 确保content script已注入
-            await chrome.scripting.executeScript({
-                target: { tabId: tab.id },
-                files: ['content.js']
-            });
+            // 检查是否已经注入了content script
+            let scriptInjected = false;
+            try {
+                await chrome.tabs.sendMessage(tab.id, { type: 'PING' });
+                scriptInjected = true;
+            } catch (error) {
+                // content script 未注入，需要注入
+                scriptInjected = false;
+            }
 
-            // 注入样式
-            await chrome.scripting.insertCSS({
-                target: { tabId: tab.id },
-                files: ['styles.css']
-            });
+            // 只在需要时注入脚本
+            if (!scriptInjected) {
+                // 注入样式
+                await chrome.scripting.insertCSS({
+                    target: { tabId: tab.id },
+                    files: ['styles.css']
+                });
+
+                // 注入content script
+                await chrome.scripting.executeScript({
+                    target: { tabId: tab.id },
+                    files: ['content.js']
+                });
+                
+                // 等待脚本初始化
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
 
             // 发送页面翻译消息
             await chrome.tabs.sendMessage(tab.id, {
