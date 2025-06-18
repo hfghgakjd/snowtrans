@@ -126,12 +126,51 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
  * 监听键盘快捷键命令
  * @param {string} command - 快捷键命令名称
  */
-chrome.commands.onCommand.addListener((command) => {
+chrome.commands.onCommand.addListener(async (command) => {
     if (command === 'translate-selection') {
         chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
             chrome.tabs.sendMessage(tabs[0].id, {
                 type: 'TRANSLATE_COMMAND'
             });
         });
+    }
+    
+    if (command === 'translate-page') {
+        try {
+            // 获取当前活动标签页
+            const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+            
+            // 检查content script是否已注入
+            let scriptInjected = false;
+            try {
+                await chrome.tabs.sendMessage(tab.id, { type: 'PING' });
+                scriptInjected = true;
+            } catch (error) {
+                scriptInjected = false;
+            }
+
+            // 如果未注入，先注入脚本
+            if (!scriptInjected) {
+                await chrome.scripting.insertCSS({
+                    target: { tabId: tab.id },
+                    files: ['styles.css']
+                });
+
+                await chrome.scripting.executeScript({
+                    target: { tabId: tab.id },
+                    files: ['content.js']
+                });
+                
+                // 等待脚本初始化
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+
+            // 发送页面翻译命令
+            chrome.tabs.sendMessage(tab.id, {
+                type: 'PAGE_TRANSLATE'
+            });
+        } catch (error) {
+            console.error('Page translation shortcut error:', error);
+        }
     }
 });

@@ -2,116 +2,314 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>翻译助手设置</title>
+    <title>翻译助手 - 设置</title>
     <style>
         :root {
-            --md-sys-color-primary: #1a73e8;
-            --md-sys-color-surface: #ffffff;
-            --md-sys-color-background: #f8f9fa;
+            --primary-color: #1a73e8;
+            --primary-dark: #1557b0;
+            --surface-color: #ffffff;
+            --background-color: #f8f9fa;
+            --text-primary: #202124;
+            --text-secondary: #5f6368;
+            --border-color: #e8eaed;
+            --border-radius: 8px;
+            --spacing: 20px;
+            --transition: all 0.2s ease;
         }
 
         body {
-            font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, sans-serif;
             margin: 0;
-            padding: 24px;
-            background: var(--md-sys-color-background);
-            color: #3c4043;
+            font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--background-color);
+            color: var(--text-primary);
         }
 
         .container {
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
+            padding: var(--spacing);
         }
 
-        .settings-card {
-            background: var(--md-sys-color-surface);
-            border-radius: 28px;
+        .header {
+            background: var(--surface-color);
+            border-radius: 12px;
             padding: 24px;
-            box-shadow: 0 1px 3px rgba(60,64,67,0.3);
-        }
-
-        .section {
             margin-bottom: 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
         }
 
-        h1 {
-            font-size: 24px;
-            color: #202124;
-            margin: 0 0 24px 0;
+        .header h1 {
+            margin: 0 0 8px 0;
+            font-size: 28px;
+            font-weight: 500;
+            color: var(--primary-color);
         }
 
-        h2 {
+        .header p {
+            margin: 0;
+            color: var(--text-secondary);
             font-size: 16px;
-            color: #202124;
-            margin: 0 0 16px 0;
         }
 
-        .option {
-            margin-bottom: 16px;
+        .settings-section {
+            background: var(--surface-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .settings-section h2 {
+            margin: 0 0 20px 0;
+            font-size: 20px;
+            font-weight: 500;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-icon {
+            width: 24px;
+            height: 24px;
+            fill: var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
         }
 
         label {
             display: block;
             margin-bottom: 8px;
-            color: #3c4043;
+            font-weight: 500;
+            color: var(--text-primary);
         }
 
         select, input {
             width: 100%;
-            padding: 8px 12px;
-            border: 1px solid rgba(0,0,0,0.12);
-            border-radius: 8px;
-            font-family: inherit;
-            font-size: 14px;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 15px;
+            color: var(--text-primary);
+            background: var(--surface-color);
+            transition: var(--transition);
+            box-sizing: border-box;
         }
 
-        .save-btn {
-            background: var(--md-sys-color-primary);
-            color: white;
-            border: none;
+        select:hover, input:hover {
+            border-color: var(--primary-color);
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.1);
+        }
+
+        .shortcut-input {
+            position: relative;
+        }
+
+        .shortcut-display {
+            background: #f8f9fa;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .shortcut-display:hover {
+            border-color: var(--primary-color);
+        }
+
+        .shortcut-display.recording {
+            border-color: #ea4335;
+            background: #fef7f0;
+        }
+
+        .shortcut-keys {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .shortcut-status {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .shortcut-status.recording {
+            color: #ea4335;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 32px;
+        }
+
+        .btn {
             padding: 12px 24px;
-            border-radius: 8px;
-            font-family: inherit;
+            border: none;
+            border-radius: var(--border-radius);
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
-        .save-btn:hover {
-            background: #1557b0;
-            box-shadow: 0 1px 3px rgba(60,64,67,0.3);
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #4285f4);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--surface-color);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .status-message {
+            padding: 12px 16px;
+            border-radius: var(--border-radius);
+            margin-top: 16px;
+            font-weight: 500;
+        }
+
+        .status-success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #4caf50;
+        }
+
+        .status-error {
+            background: #fef7f0;
+            color: #d32f2f;
+            border: 1px solid #f44336;
+        }
+
+        .help-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        .shortcut-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .shortcut-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="settings-card">
+        <div class="header">
             <h1>翻译助手设置</h1>
-            
-            <div class="section">
-                <h2>常规设置</h2>
-                <div class="option">
-                    <label for="defaultTargetLang">默认目标语言</label>
-                    <select id="defaultTargetLang">
-                        <option value="zh">中文</option>
-                        <option value="en">英语</option>
-                        <option value="ja">日语</option>
-                        <option value="ko">韩语</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="section">
-                <h2>快捷键设置</h2>
-                <div class="option">
-                    <label>划词翻译：Alt + T</label>
-                </div>
-            </div>
-
-            <button class="save-btn" id="saveSettings">保存设置</button>
+            <p>配置您的翻译偏好和快捷键</p>
         </div>
+
+        <div class="settings-section">
+            <h2>
+                <svg class="section-icon" viewBox="0 0 24 24">
+                    <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
+                </svg>
+                翻译设置
+            </h2>
+            
+            <div class="form-group">
+                <label for="defaultTargetLang">默认目标语言</label>
+                <select id="defaultTargetLang">
+                    <option value="zh">中文</option>
+                    <option value="en">英语</option>
+                    <option value="ja">日语</option>
+                    <option value="ko">韩语</option>
+                    <option value="fr">法语</option>
+                    <option value="de">德语</option>
+                    <option value="es">西班牙语</option>
+                    <option value="it">意大利语</option>
+                    <option value="ru">俄语</option>
+                </select>
+                <div class="help-text">选择您最常使用的翻译目标语言</div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h2>
+                <svg class="section-icon" viewBox="0 0 24 24">
+                    <path d="M20,17A2,2 0 0,0 22,15V4A2,2 0 0,0 20,2H9.46C9.81,2.61 10,3.3 10,4H20V15H11V17M15,7V9H9V22H7V16H5V22H3V14H1.5V9A2,2 0 0,1 3.5,7H15M8,4A2,2 0 0,1 6,6A2,2 0 0,1 4,4A2,2 0 0,1 6,2A2,2 0 0,1 8,4Z"/>
+                </svg>
+                快捷键设置
+            </h2>
+            
+            <div class="shortcut-grid">
+                <div class="form-group">
+                    <label for="translateSelectionShortcut">翻译选中文本</label>
+                    <div class="shortcut-input">
+                        <div class="shortcut-display" id="translateSelectionShortcut">
+                            <span class="shortcut-keys" id="translateSelectionKeys">Alt+T</span>
+                            <span class="shortcut-status">点击修改</span>
+                        </div>
+                    </div>
+                    <div class="help-text">选中文本后按此快捷键进行翻译</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="translatePageShortcut">翻译整个页面</label>
+                    <div class="shortcut-input">
+                        <div class="shortcut-display" id="translatePageShortcut">
+                            <span class="shortcut-keys" id="translatePageKeys">Alt+Alt</span>
+                            <span class="shortcut-status">点击修改</span>
+                        </div>
+                    </div>
+                    <div class="help-text">快速翻译当前页面的所有英文内容</div>
+                </div>
+            </div>
+
+            <div class="help-text" style="margin-top: 20px; padding: 12px; background: #f0f4ff; border-radius: 8px; border-left: 4px solid var(--primary-color);">
+                <strong>快捷键设置说明：</strong><br>
+                • 点击快捷键框开始录制新的快捷键组合<br>
+                • 支持 Ctrl、Alt、Shift 等修饰键<br>
+                • 建议使用不常用的组合避免与其他应用冲突<br>
+                • 修改后需要重新加载页面生效
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-secondary" id="resetSettings">重置默认</button>
+            <button class="btn btn-primary" id="saveSettings">保存设置</button>
+        </div>
+
+        <div id="statusMessage"></div>
     </div>
+
     <script src="options.js"></script>
 </body>
 </html>

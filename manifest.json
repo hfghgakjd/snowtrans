@@ -49,6 +49,12 @@
                 "mac": "Command+T"
             },
             "description": "翻译选中的文本"
+        },
+        "translate-page": {
+            "suggested_key": {
+                "default": "Alt+S"
+            },
+            "description": "翻译页面"
         }
     },
     "options_page": "options.html"
