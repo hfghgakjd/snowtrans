@@ -38,7 +38,17 @@ class TranslatePanel {
          */
         this.isPageTranslating = false;
 
-        this.originalContent = null;  // 添加原始内容存储
+        /**
+         * 悬浮翻译提示容器
+         * @type {HTMLElement}
+         */
+        this.hoverContainer = null;
+
+        /**
+         * 当前悬浮的翻译提示
+         * @type {HTMLElement}
+         */
+        this.currentHoverTip = null;
 
         // 初始化
         this.init();
@@ -268,7 +278,7 @@ class TranslatePanel {
 
     /**
      * 处理页面翻译
-     * 遍历页面中的文本节点并进行翻译
+     * 为页面中的文本节点添加悬浮翻译功能
      * @returns {Promise<void>}
      * @author Shawn Jones
      */
@@ -279,26 +289,28 @@ class TranslatePanel {
             return;
         }
 
-        // 保存原始内容
-        this.originalContent = {
-            title: document.title,
-            body: document.body.innerHTML
-        };
-
-        this.addRestoreButton();
         this.isPageTranslating = true;
         document.body.setAttribute('data-translated', 'true');
 
+        // 创建悬浮翻译容器
+        this.createHoverContainer();
+        this.addRestoreButton();
+
         try {
             const textNodes = this.getTextNodes(document.body);
-            const batchSize = 10;
+            const batchSize = 15;
             
             for (let i = 0; i < textNodes.length; i += batchSize) {
                 const batch = textNodes.slice(i, i + batchSize);
                 await this.translateBatch(batch);
+                
+                // 添加小延迟避免阻塞UI
+                if (i + batchSize < textNodes.length) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
             }
 
-            this.showToast('页面翻译完成');
+            this.showToast('页面翻译完成，鼠标悬停查看翻译');
         } catch (error) {
             console.error('Page translation error:', error);
             this.showToast('页面翻译失败');
@@ -308,32 +320,43 @@ class TranslatePanel {
     }
 
     /**
+     * 创建悬浮翻译容器
+     */
+    createHoverContainer() {
+        if (this.hoverContainer) return;
+
+        this.hoverContainer = document.createElement('div');
+        this.hoverContainer.className = 'translate-hover-container';
+        document.body.appendChild(this.hoverContainer);
+    }
+
+    /**
      * 获取需要翻译的文本节点
      * @param {Element} element - 要搜索的根元素
      * @returns {Array<Node>} - 符合翻译条件的文本节点数组
      * @author Shawn Jones
      */
     getTextNodes(element) {
-        // 创建 TreeWalker 用于遍历 DOM 树
         const walker = document.createTreeWalker(
             element,
             NodeFilter.SHOW_TEXT,
             {
                 acceptNode: (node) => {
-                    // 排除不需要翻译的节点：
-                    // 1. script 和 style 标签中的内容
-                    // 2. 已经翻译过的节点
-                    // 3. 不包含英文的节点
-                    if (node.parentElement.tagName === 'SCRIPT' || 
-                        node.parentElement.tagName === 'STYLE' ||
+                    // 排除不需要翻译的节点
+                    const parentTag = node.parentElement.tagName;
+                    if (['SCRIPT', 'STYLE', 'CODE', 'PRE'].includes(parentTag) ||
                         node.parentElement.hasAttribute('data-translated') ||
-                        this.translatedNodes.has(node)) {
+                        node.parentElement.classList.contains('translate-panel') ||
+                        node.parentElement.classList.contains('translate-hover-container') ||
+                        this.translatedNodes.has(node.parentElement)) {
                         return NodeFilter.FILTER_REJECT;
                     }
                     
-                    // 只翻译包含英文的文本
+                    // 只翻译包含英文且长度适中的文本
                     const text = node.textContent.trim();
-                    return /[a-zA-Z]/.test(text) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+                    return /[a-zA-Z]/.test(text) && text.length > 3 && text.length < 500 
+                        ? NodeFilter.FILTER_ACCEPT 
+                        : NodeFilter.FILTER_REJECT;
                 }
             }
         );
@@ -353,30 +376,172 @@ class TranslatePanel {
      * @author Shawn Jones
      */
     async translateBatch(nodes) {
-        const texts = nodes.map(node => node.textContent.trim());
-        const translations = await Promise.all(
-            texts.map(text => this.translate(text))
+        const validNodes = nodes.filter(node => 
+            node.parentElement && !this.translatedNodes.has(node.parentElement)
         );
 
-        nodes.forEach((node, index) => {
-            if (translations[index] && !node.parentElement.hasAttribute('data-translated')) {
-                const wrapper = document.createElement('span'); // Changed from 'div'
-                wrapper.setAttribute('data-translated', 'true');
-                wrapper.className = 'page-translation-wrapper';
-                
-                const original = document.createElement('span'); // Changed from 'div'
-                original.textContent = node.textContent;
-                original.className = 'page-translation-original';
-                
-                const translated = document.createElement('span'); // Changed from 'div'
-                translated.textContent = translations[index];
-                translated.className = 'page-translation-result';
-                
-                wrapper.appendChild(original);
-                wrapper.appendChild(translated);
-                
-                node.parentNode.replaceChild(wrapper, node);
-                this.translatedNodes.add(wrapper);
+        for (const node of validNodes) {
+            try {
+                const text = node.textContent.trim();
+                if (!text || text.length < 3) continue;
+
+                const translation = await this.translate(text);
+                if (translation && translation !== text) {
+                    this.addHoverTranslation(node.parentElement, text, translation);
+                    this.translatedNodes.add(node.parentElement);
+                }
+            } catch (error) {
+                console.warn('Translation failed for node:', error);
+            }
+        }
+    }
+
+    /**
+     * 为元素添加悬浮翻译功能
+     * @param {Element} element - 目标元素
+     * @param {string} originalText - 原文
+     * @param {string} translation - 翻译结果
+     */
+    addHoverTranslation(element, originalText, translation) {
+        // 标记元素
+        element.setAttribute('data-translatable', 'true');
+        element.setAttribute('data-original', originalText);
+        element.setAttribute('data-translation', translation);
+        
+        // 添加悬浮样式
+        element.classList.add('translatable-text');
+
+        // 使用变量存储事件处理器，避免重复绑定
+        const showHandler = (e) => {
+            e.stopPropagation();
+            // 清除可能存在的隐藏延迟
+            if (element._hideTimeout) {
+                clearTimeout(element._hideTimeout);
+                element._hideTimeout = null;
+            }
+            this.showHoverTip(e.currentTarget, translation);
+        };
+
+        const hideHandler = (e) => {
+            e.stopPropagation();
+            // 使用元素级别的延迟控制，避免全局冲突
+            element._hideTimeout = setTimeout(() => {
+                // 检查鼠标是否真的离开了所有翻译元素
+                const hoveredElement = document.elementFromPoint(e.clientX, e.clientY);
+                if (!hoveredElement || !hoveredElement.closest('.translatable-text')) {
+                    this.hideHoverTip();
+                }
+                element._hideTimeout = null;
+            }, 150);
+        };
+
+        // 移除旧的事件监听器（如果存在）
+        element.removeEventListener('mouseenter', element._showHandler);
+        element.removeEventListener('mouseleave', element._hideHandler);
+
+        // 添加新的事件监听器
+        element.addEventListener('mouseenter', showHandler);
+        element.addEventListener('mouseleave', hideHandler);
+
+        // 存储事件处理器引用，便于后续移除
+        element._showHandler = showHandler;
+        element._hideHandler = hideHandler;
+    }
+
+    /**
+     * 显示悬浮翻译提示
+     * @param {Element} element - 触发元素
+     * @param {string} translation - 翻译文本
+     */
+    showHoverTip(element, translation) {
+        // 如果当前已有相同内容的提示，不重复创建
+        if (this.currentHoverTip && 
+            this.currentHoverTip.querySelector('.translate-hover-content').textContent === translation) {
+            return;
+        }
+
+        // 清除所有延迟隐藏的定时器
+        this.clearAllHideTimeouts();
+
+        this.hideHoverTip(); // 先隐藏之前的提示
+
+        const tip = document.createElement('div');
+        tip.className = 'translate-hover-tip';
+        tip.innerHTML = `
+            <div class="translate-hover-content">${translation}</div>
+            <div class="translate-hover-arrow"></div>
+        `;
+
+        // 临时添加到容器中以获取尺寸
+        this.hoverContainer.appendChild(tip);
+        this.currentHoverTip = tip;
+
+        // 强制重排以获取正确的尺寸
+        tip.offsetHeight;
+
+        // 计算位置
+        const rect = element.getBoundingClientRect();
+        const tipRect = tip.getBoundingClientRect();
+        
+        let left = rect.left + (rect.width - tipRect.width) / 2;
+        let top = rect.top - tipRect.height - 12;
+
+        // 边界检测
+        const viewport = {
+            width: window.innerWidth,
+            height: window.innerHeight
+        };
+
+        // 水平边界检测
+        if (left < 8) {
+            left = 8;
+        } else if (left + tipRect.width > viewport.width - 8) {
+            left = viewport.width - tipRect.width - 8;
+        }
+
+        // 垂直边界检测 - 如果上方空间不够，显示在下方
+        if (top < 8) {
+            top = rect.bottom + 12;
+            tip.classList.add('translate-hover-tip-bottom');
+        }
+
+        // 设置最终位置
+        tip.style.left = left + window.pageXOffset + 'px';
+        tip.style.top = top + window.pageYOffset + 'px';
+
+        // 立即显示，不使用 requestAnimationFrame 延迟
+        tip.classList.add('translate-hover-tip-visible');
+    }
+
+    /**
+     * 隐藏悬浮翻译提示
+     */
+    hideHoverTip() {
+        if (this.currentHoverTip) {
+            const tip = this.currentHoverTip;
+            tip.classList.remove('translate-hover-tip-visible');
+            
+            // 使用更短的延迟时间
+            setTimeout(() => {
+                if (tip && tip.parentNode) {
+                    tip.parentNode.removeChild(tip);
+                }
+                if (this.currentHoverTip === tip) {
+                    this.currentHoverTip = null;
+                }
+            }, 100);
+        }
+    }
+
+    /**
+     * 清除所有元素的隐藏延迟定时器
+     */
+    clearAllHideTimeouts() {
+        const translatableElements = document.querySelectorAll('[data-translatable="true"]');
+        translatableElements.forEach(element => {
+            if (element._hideTimeout) {
+                clearTimeout(element._hideTimeout);
+                element._hideTimeout = null;
             }
         });
     }
@@ -395,14 +560,55 @@ class TranslatePanel {
 
     // 还原内容
     restoreOriginalContent() {
-        if (this.originalContent) {
-            document.title = this.originalContent.title;
-            document.body.innerHTML = this.originalContent.body;
-            this.isPageTranslating = false;
-            document.body.removeAttribute('data-translated');
-            this.addRestoreButton(); // 重新添加还原按钮
-            this.showToast('页面已还原');
+        // 移除所有翻译相关的类和属性
+        const translatableElements = document.querySelectorAll('[data-translatable="true"]');
+        translatableElements.forEach(element => {
+            // 清除延迟定时器
+            if (element._hideTimeout) {
+                clearTimeout(element._hideTimeout);
+                element._hideTimeout = null;
+            }
+            
+            // 移除事件监听器
+            if (element._showHandler) {
+                element.removeEventListener('mouseenter', element._showHandler);
+            }
+            if (element._hideHandler) {
+                element.removeEventListener('mouseleave', element._hideHandler);
+            }
+            
+            // 清理属性和类
+            element.removeAttribute('data-translatable');
+            element.removeAttribute('data-original');
+            element.removeAttribute('data-translation');
+            element.classList.remove('translatable-text');
+            
+            // 清理事件处理器引用
+            delete element._showHandler;
+            delete element._hideHandler;
+        });
+
+        // 移除悬浮容器
+        if (this.hoverContainer) {
+            this.hoverContainer.remove();
+            this.hoverContainer = null;
         }
+
+        // 清理当前悬浮提示
+        this.currentHoverTip = null;
+
+        // 移除还原按钮
+        const restoreBtn = document.querySelector('.translate-restore-btn');
+        if (restoreBtn) {
+            restoreBtn.remove();
+        }
+
+        // 重置状态
+        this.isPageTranslating = false;
+        this.translatedNodes.clear();
+        document.body.removeAttribute('data-translated');
+        
+        this.showToast('页面已还原');
     }
 }
 
